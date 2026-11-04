@@ -1,5 +1,4 @@
-
-from flask import Flask, jsonify
+from flask import Flask, jsonify,render_template,redirect,url_for
 import pymysql
 import pymysql.cursors
 from config import Config
@@ -16,6 +15,7 @@ def get_db_connection():
     )
 
 
+
 @app.route('/')
 def home():
     connection = None
@@ -27,29 +27,30 @@ def home():
         with connection.cursor() as cursor:
 
             sql = """
-                  SELECT seance.id       AS id_seance, \
-                         seance.date     AS horaire, \
-                         seance.langue, \
-                         film.id         AS id_film, \
-                         film.nom_film   AS titre_film, \
-                         salle.id        AS id_salle, \
-                         salle.num_salle AS numero_salle
-                  FROM seance
-                           JOIN film
-                                ON film.id_seance = seance.id
-                           JOIN salle
-                                ON salle.id_film = film.id
-                  ORDER BY ABS(TIMESTAMPDIFF(SECOND, NOW(), seance.date)) ASC LIMIT 1 \
-                  """
+                SELECT
+                    seance.id AS id_seance,
+                    seance.date AS horaire,
+                    seance.langue,
+                    film.id AS id_film,
+                    film.nom_film AS titre_film,
+                    salle.id AS id_salle,
+                    salle.num_salle AS numero_salle
+                FROM seance
+                JOIN film
+                    ON film.id_seance = seance.id
+                JOIN salle
+                    ON salle.id_film = film.id
+                ORDER BY ABS(
+                    TIMESTAMPDIFF(SECOND, NOW(), seance.date)
+                ) ASC
+                LIMIT 1
+            """
+
             cursor.execute(sql)
             resultat = cursor.fetchone()
 
-        # Retour du résultat en JSON
-        return jsonify({
-            "statut": "succès",
-            "message": "Séance la plus proche récupérée",
-            "seance": resultat
-        }), 200
+        # Affichage du template HTML avec les données récupérées
+        return render_template('index.html', seance=resultat)
 
     except pymysql.MySQLError as error:
         return jsonify({
@@ -60,6 +61,60 @@ def home():
     finally:
         if connection is not None:
             connection.close()
+
+
+# Route sans variable : redirection vers l'accueil
+@app.route('/film/')
+def film_sans_variable():
+    return redirect(url_for('home'))
+
+
+# Route avec variable : affichage des informations du film
+@app.route('/film/<int:id_film>')
+def film_avec_variable(id_film):
+
+    connection = None
+
+    try:
+        connection = get_db_connection()
+
+        with connection.cursor() as cursor:
+
+            sql = """
+                  SELECT film.id         AS id_film, \
+                         film.nom_film   AS titre_film, \
+                         film.resume     AS resume, \
+                         seance.date     AS horaire, \
+                         seance.langue, \
+                         salle.num_salle AS numero_salle
+                  FROM film
+                           LEFT JOIN seance
+                                     ON film.id_seance = seance.id
+                           LEFT JOIN salle
+                                     ON salle.id_film = film.id
+                  WHERE film.id = %s \
+                  """
+
+            cursor.execute(sql, (id_film,))
+            resultat = cursor.fetchone()
+
+        if resultat is None:
+            return "Film introuvable", 404
+
+        return render_template('film.html', film=resultat)
+
+    except pymysql.MySQLError as error:
+        return f"Erreur SQL : {str(error)}", 500
+
+    finally:
+        if connection is not None:
+            connection.close()
+
+@app.route('/page/<var>')
+def page_avec_variable(var):
+# traitement avec la variable transmise
+    return f"Variable reçue : {var}"
+
 
 
 if __name__ == '__main__':
