@@ -70,10 +70,18 @@ def film_sans_variable():
 
 
 # Route avec variable : affichage des informations du film
+
 @app.route('/film/<int:id_film>')
 def film_avec_variable(id_film):
 
     connection = None
+
+    # Association entre les identifiants des films et leurs affiches
+    affiches = {
+        1: "affiche-croquette.jpg",
+        2: "affiche-smile.jpg",
+        3: "affiche-leemiller.png"
+    }
 
     try:
         connection = get_db_connection()
@@ -81,19 +89,20 @@ def film_avec_variable(id_film):
         with connection.cursor() as cursor:
 
             sql = """
-                  SELECT film.id         AS id_film, \
-                         film.nom_film   AS titre_film, \
-                         film.resume     AS resume, \
-                         seance.date     AS horaire, \
-                         seance.langue, \
-                         salle.num_salle AS numero_salle
-                  FROM film
-                           LEFT JOIN seance
-                                     ON film.id_seance = seance.id
-                           LEFT JOIN salle
-                                     ON salle.id_film = film.id
-                  WHERE film.id = %s \
-                  """
+                SELECT
+                    film.id AS id_film,
+                    film.nom_film AS titre_film,
+                    film.resume AS resume,
+                    seance.date AS horaire,
+                    seance.langue,
+                    salle.num_salle AS numero_salle
+                FROM film
+                LEFT JOIN seance
+                    ON film.id_seance = seance.id
+                LEFT JOIN salle
+                    ON salle.id_film = film.id
+                WHERE film.id = %s
+            """
 
             cursor.execute(sql, (id_film,))
             resultat = cursor.fetchone()
@@ -101,7 +110,16 @@ def film_avec_variable(id_film):
         if resultat is None:
             return "Film introuvable", 404
 
-        return render_template('film.html', film=resultat)
+        # Choix de l'affiche selon l'identifiant du film
+        nom_affiche = affiches.get(
+            id_film, "affiche-defaut.png"
+        )
+
+        return render_template(
+            'film.html',
+            film=resultat,
+            affiche=nom_affiche
+        )
 
     except pymysql.MySQLError as error:
         return f"Erreur SQL : {str(error)}", 500
@@ -109,13 +127,6 @@ def film_avec_variable(id_film):
     finally:
         if connection is not None:
             connection.close()
-
-@app.route('/page/<var>')
-def page_avec_variable(var):
-# traitement avec la variable transmise
-    return f"Variable reçue : {var}"
-
-
 
 if __name__ == '__main__':
     app.run(debug=True)
