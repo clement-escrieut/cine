@@ -1,10 +1,81 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
 
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block contenu %}
+
+<div class="container mt-4">
+
+    <h2 class="border-bottom pb-2">
+        Liste des séances
+    </h2>
+
+    <!-- Affichage du numéro de salle choisi -->
+    <p class="mt-3">
+        Vous avez choisi la salle numéro {{ numSalle }}
+    </p>
+
+    {% if seances %}
+
+        <h4 class="mt-4">Prochaines séances :</h4>
+
+        <ul>
+
+            {% for seance in seances %}
+
+                <!-- Une séance par élément de liste -->
+                <li class="mb-3">
+
+                    <strong>{{ seance.titre_film }}</strong>
+
+                    <!-- Liste imbriquée des informations -->
+                    <ul>
+                        <li>Identifiant de la séance :
+                            {{ seance.id_seance }}
+                        </li>
+
+                        <li>Date et horaire :
+                            {{ seance.horaire }}
+                        </li>
+
+                        <li>Langue :
+                            {{ seance.langue }}
+                        </li>
+
+                        <li>Identifiant du film :
+                            {{ seance.id_film }}
+                        </li>
+
+                        <li>Numéro de salle :
+                            {{ seance.numero_salle }}
+                        </li>
+
+                        <li>Résumé :
+                            {{ seance.resume or "Non renseigné" }}
+                        </li>
+                    </ul>
+
+                    <a href="{{ url_for('film_avec_variable', id_film=seance.id_film) }}">
+                        Voir les informations du film
+                    </a>
+
+                </li>
+
+            {% endfor %}
+
+        </ul>
+
+    {% else %}
+
+        <p class="alert alert-warning mt-3">
+            Aucune séance trouvée pour cette salle.
+        </p>
+
+    {% endif %}
+
+    <a href="{{ url_for('home') }}" class="btn btn-primary mt-3">
+        Retour à l'accueil
+    </a>
+
+</div>
+
+{% endblock %}

@@ -128,5 +128,58 @@ def film_avec_variable(id_film):
         if connection is not None:
             connection.close()
 
+
+
+@app.route('/seance/<int:numSalle>')
+def seances(numSalle):
+
+    connection = None
+
+    try:
+        connection = get_db_connection()
+
+        with connection.cursor() as cursor:
+
+            sql = """
+                  SELECT seance.id       AS id_seance, \
+                         seance.date     AS horaire, \
+                         seance.langue, \
+                         film.id         AS id_film, \
+                         film.nom_film   AS titre_film, \
+                         film.resume, \
+                         salle.num_salle AS numero_salle
+
+                  FROM seance
+
+                           JOIN film
+                                ON film.id_seance = seance.id
+
+                           JOIN salle
+                                ON salle.id_film = film.id
+
+                  WHERE salle.num_salle = %s
+
+                  ORDER BY seance.date ASC \
+                  """
+
+            cursor.execute(sql, (numSalle,))
+            resultat = cursor.fetchall()
+
+            cursor.execute(sql, (numSalle,))
+            resultat = cursor.fetchall()
+
+        return render_template(
+            'seance.html',
+            seances=resultat,
+            numSalle=numSalle
+        )
+
+    except pymysql.MySQLError as error:
+        return f"Erreur SQL : {str(error)}", 500
+
+    finally:
+        if connection is not None:
+            connection.close()
+
 if __name__ == '__main__':
     app.run(debug=True)

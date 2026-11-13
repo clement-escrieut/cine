@@ -33,18 +33,15 @@
         <h3>Prochaine séance</h3>
         <div class="row border border-warning p-3">
             <div class="col-sm-4">
-                <img src="../static/Image/affiche-leemiller.png" class="img-fluid" alt="Affiche Lee Miller">
+                <img src="../static/Image/backrooms.webp" class="img-fluid" alt="Affiche Lee Miller">
             </div>
 
             <div class="col-sm-8">
-                <h3 class="film">Lee Miller</h3>
-                <p>Séance à 14h30 / Salle 1</p>
+                <h3 class="film">Backrooms</h3>
+                <p>Séance à 00h00 / Salle 4</p>
                 <h4>Résumé du film</h4>
-                <p>Lee Miller est un film britannique réalisé par Ellen Kuras et sorti en 2023. Il s'agit d'un film biographique sur la photographe Elizabeth "Lee" Miller.</p>
+                <p>LSa thérapeute, Mary (jouée par Renate Reinsve), pénètre à son tour dans les lieux pour le retrouver, mais le labyrinthe absorbe les traumatismes et les souvenirs, enfermant les personnages dans une prison psychologique.  Le film s'achève sur une révélation terrifiante : Mary est en réalité capturée par l'organisation Async et piégée dans une version déformée des Backrooms, suggérant que la dimension continue de se propager à travers les esprits humains</p>
             </div>
-            <a href="{{ url_for('film_avec_variable', id_film=seance.id_film) }}">
-                Voir les informations du film
-            </a>
         </div>
     </div>
 
@@ -73,6 +70,15 @@
                     </div>
                     <img src="../static/Image/interdiction-moins-de-16-ans.png" class="img-fluid" alt="Moins de 16 ans" style="max-width: 50px;">
                 </div>
+            </div>
+            <div class="col-md-6 mb-3">
+                <div class="border p-2 d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <img src="../static/Image/affiche-leemiller.png" class="img-fluid" alt="Affiche Lee Miller" style="max-width: 100px;">
+                        <div class="ms-3">
+                            <h3 class="film">Lee Miller</h3>
+                            <p>Séance à 14h30 / salle 1</p>
+                        </div>
             </div>
 
 </div>
