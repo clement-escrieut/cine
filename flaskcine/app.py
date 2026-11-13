@@ -80,7 +80,8 @@ def film_avec_variable(id_film):
     affiches = {
         1: "affiche-croquette.jpg",
         2: "affiche-smile.jpg",
-        3: "affiche-leemiller.png"
+        3: "affiche-leemiller.png",
+        4: "backrooms.webp"
     }
 
     try:
@@ -180,6 +181,67 @@ def seances(numSalle):
     finally:
         if connection is not None:
             connection.close()
+
+
+@app.route('/getseance/<int:numSalle>')
+def getseances(numSalle):
+
+    connection = None
+
+    try:
+        # Connexion à la base de données
+        connection = get_db_connection()
+
+        with connection.cursor() as cursor:
+
+            sql = """
+                SELECT
+                    seance.date AS horaire,
+                    film.nom_film AS titre,
+                    seance.langue AS version,
+                    '' AS interdiction
+
+                FROM seance
+
+                JOIN film
+                    ON film.id_seance = seance.id
+
+                JOIN salle
+                    ON salle.id_film = film.id
+
+                WHERE salle.num_salle = %s
+
+                ORDER BY seance.date ASC
+            """
+
+            cursor.execute(sql, (numSalle,))
+            resultat = cursor.fetchall()
+
+            # Transformation des résultats en JSON
+            seances_json = []
+
+            for seance in resultat:
+
+                seances_json.append({
+                    "horaire": seance["horaire"].strftime("%Hh%M"),
+                    "titre": seance["titre"],
+                    "version": seance["version"],
+                    "interdiction": seance["interdiction"]
+                })
+
+        # Retourner uniquement le JSON
+        return jsonify(seances_json)
+
+    except pymysql.MySQLError as error:
+        return jsonify({
+            "erreur": str(error)
+        }), 500
+
+    finally:
+        if connection is not None:
+            connection.close()
+
+
 
 if __name__ == '__main__':
     app.run(debug=True)
